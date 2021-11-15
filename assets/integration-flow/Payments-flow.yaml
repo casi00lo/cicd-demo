@@ -1,0 +1,92 @@
+$integration: http://ibm.com/appconnect/integration/v2/integrationFile
+integration:
+  type: api
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        retrievePayment:
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+          input-context:
+            data: payment
+          output-context:
+            data: payment
+      options:
+        resources:
+          - business-object: payment
+            model:
+              $ref: '#/models/payment'
+            triggers:
+              retrieve: retrievePayment
+      type: api-trigger
+  action-interfaces:
+    action-interface-1:
+      type: api-action
+      business-object: document
+      connector-type: cloudantdb
+      account-name: apidemo - Innovation Team
+      actions:
+        RETRIEVEALL: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - retrieve-action:
+              name: IBM Cloudant Retrieve documents
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-1'
+              filter:
+                where:
+                  and:
+                    - _id: '{{$api.documentID}}'
+                    - db_name: macro-demo
+                input:
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                limit: 1
+              allow-truncation: false
+              pagination-type: SKIP_LIMIT
+              allow-empty-output: true
+          - response:
+              name: response-1
+              reply-maps:
+                - title: payment successfully retrieved
+                  status-code: 200
+                  map:
+                    mappings:
+                      - documentData:
+                          expression: '$IBMCloudantRetrievedocuments.data '
+                      - documentID:
+                          template: '{{$IBMCloudantRetrievedocuments._id}}'
+                    $map: http://ibm.com/appconnect/map/v1
+                    input:
+                      - variable: api
+                        $ref: '#/trigger/api/parameters'
+                      - variable: IBMCloudantRetrievedocuments
+                        $ref: >-
+                          #/node-output/IBM Cloudant Retrieve
+                          documents/response/payload
+                      - variable: IBMCloudantRetrievedocumentsMetadata
+                        $ref: '#/node-output/IBM Cloudant Retrieve documents/response'
+                      - variable: flowDetails
+                        $ref: '#/flowDetails'
+                  input: []
+  name: Payments
+models:
+  payment:
+    name: payment
+    properties:
+      documentID:
+        required: false
+        id: true
+        type: string
+      documentData:
+        required: false
+        id: false
+        type: {}
+    plural: payment
+    description: ' '
+    operations:
+      retrieve: '#/integration/assemblies/assembly-1'

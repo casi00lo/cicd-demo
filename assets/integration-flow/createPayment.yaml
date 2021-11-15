@@ -1,0 +1,190 @@
+$integration: http://ibm.com/appconnect/integration/v2/integrationFile
+integration:
+  type: api
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        createPayment:
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+          input-context:
+            data: payment
+          output-context:
+            data: payment
+      options:
+        resources:
+          - business-object: payment
+            model:
+              $ref: '#/models/payment'
+            triggers:
+              create: createPayment
+      type: api-trigger
+  action-interfaces:
+    action-interface-1:
+      type: api-action
+      business-object: document
+      connector-type: cloudantdb
+      account-name: apidemo - Innovation Team
+      actions:
+        CREATE: {}
+    action-interface-2:
+      type: api-action
+      business-object: message
+      connector-type: mq
+      account-name: MQ-integrations
+      actions:
+        PUTMESSAGE: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - create-action:
+              name: IBM Cloudant Create document
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-1'
+              map:
+                mappings:
+                  - data:
+                      expression: >-
+                        {"payment":{"resourceId":$Request.resourceId
+                        ,"iban":$Request.iban
+                        ,"currency":$Request.currency,"cashAccountType":$Request.cashAccountType
+                        ,"ammount":$Request.ammount 
+                        ,"ownerName":$Request.ownerName ,"name":$Request.name }}
+                  - db_name:
+                      template: macro-demo
+                customSchemas: {}
+                $map: http://ibm.com/appconnect/map/v1
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+          - custom-action:
+              name: IBM MQ Put message on a queue
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-2'
+              action: PUTMESSAGE
+              map:
+                mappings:
+                  - message:
+                      template: >-
+                        { paymentId: "{{$IBMCloudantCreatedocument._id}}",
+                        status:"Completed" }
+                  - messageType:
+                      template: TEXT
+                  - queueName:
+                      template: payments_demo
+                $map: http://ibm.com/appconnect/map/v1
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: IBMCloudantCreatedocument
+                    $ref: >-
+                      #/node-output/IBM Cloudant Create
+                      document/response/payload
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+          - response:
+              name: response-1
+              reply-maps:
+                - title: payment successfully created
+                  status-code: 201
+                  map:
+                    mappings:
+                      - ammount:
+                          template: '{{$Request.ammount}}'
+                      - cashAccountType:
+                          template: '{{$Request.cashAccountType}}'
+                      - currency:
+                          template: '{{$Request.currency}}'
+                      - iban:
+                          template: '{{$Request.iban}}'
+                      - name:
+                          template: '{{$Request.name}}'
+                      - ownerName:
+                          template: '{{$Request.ownerName}}'
+                      - resourceId:
+                          template: '{{$Request.resourceId}}'
+                    $map: http://ibm.com/appconnect/map/v1
+                    input:
+                      - variable: Request
+                        $ref: '#/trigger/payload'
+                      - variable: IBMCloudantCreatedocument
+                        $ref: >-
+                          #/node-output/IBM Cloudant Create
+                          document/response/payload
+                      - variable: IBMMQPutmessageonaqueue
+                        $ref: >-
+                          #/node-output/IBM MQ Put message on a
+                          queue/response/payload
+                      - variable: flowDetails
+                        $ref: '#/flowDetails'
+                  input: []
+  name: createPayment
+models:
+  payment:
+    name: payment
+    properties:
+      resourceId:
+        required: false
+        id: true
+        type: string
+      iban:
+        required: false
+        id: false
+        type: string
+      currency:
+        required: false
+        id: false
+        type: string
+      cashAccountType:
+        required: false
+        id: false
+        type: string
+      ammount:
+        required: false
+        id: false
+        type: string
+      ownerName:
+        required: false
+        id: false
+        type: string
+      name:
+        required: false
+        id: false
+        type: string
+    plural: payment
+    description: ' '
+    operations:
+      create: '#/integration/assemblies/assembly-1'
+x-ibm-configuration:
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  cors:
+    enabled: true
+  assembly:
+    execute:
+      - invoke:
+          title: Invoke flow
+          version: 2.0.0
+          verb: keep
+          target-url: $(app-connect-designer-url)$(request.path)
+          follow-redirects: false
+          timeout: 60
+          parameter-control:
+            type: blacklist
+          header-control:
+            type: blacklist
+          inject-proxy-headers: true
+          username: P5lYbE7I
+          password: X4rG0AS1LoRgMJ2Zvy5Djwsp8l3cFK9H
+  properties:
+    app-connect-designer-url:
+      description: The URL of the App Connect Designer Api
+      encoded: false
+      value: >-
+        https://ace-designer-designer-https-cp4i.integration-26562a7d6831df3dfa02975385757d2d-0000.us-south.containers.appdomain.cloud
