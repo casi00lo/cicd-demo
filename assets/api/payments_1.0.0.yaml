@@ -1,0 +1,75 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Payments
+  x-ibm-name: payments
+  description: |
+    Retrieves a full payment 
+  contact:
+    name: Hernán Expósito
+    email: expositohernan@ibm.com
+basePath: /payments
+x-ibm-configuration:
+  properties:
+    target-url:
+      value: >-
+        http://payments-02-http-cp4i.integration-26562a7d6831df3dfa02975385757d2d-0000.us-south.containers.appdomain.cloud/Payments/payment/
+      description: URL of the proxy policy
+      encoded: false
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - invoke:
+          title: invoke
+          version: 2.0.0
+          verb: keep
+          target-url: $(target-url)/$(request.headers.paymentId)
+          follow-redirects: false
+          timeout: 60
+          parameter-control:
+            type: blocklist
+            values: []
+          header-control:
+            type: blocklist
+            values: []
+          inject-proxy-headers: true
+          backend-type: detect
+          graphql-send-type: detect
+paths:
+  /getPayment:
+    parameters:
+      - name: paymentId
+        required: true
+        in: header
+        description: Id del pago que se quiere obtener información.
+        type: string
+    get:
+      summary: Obtiene datos de un pago específico.
+      description: |-
+        Obtiene los siguientes datos:
+
+        - resourceId
+        - iban
+        - currency
+        - cashAccountType
+        - ammount
+        - ownerName
+        - name
+      responses:
+        '200':
+          description: OK
+securityDefinitions:
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+schemes:
+  - https

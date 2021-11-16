@@ -1,0 +1,83 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Redacted Payment
+  x-ibm-name: redacted-payment
+  description: 'Obtiene la información de un pago, protegiendo la información sensible'
+basePath: /secured-payment
+x-ibm-configuration:
+  properties:
+    target-url:
+      value: >-
+        http://payments-02-http-cp4i.integration-26562a7d6831df3dfa02975385757d2d-0000.us-south.containers.appdomain.cloud/Payments/payment
+      description: URL of the proxy policy
+      encoded: false
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - invoke:
+          title: invoke
+          version: 2.0.0
+          verb: keep
+          target-url: $(target-url)/$(request.headers.paymentId)
+          follow-redirects: false
+          timeout: 60
+          parameter-control:
+            type: blocklist
+            values: []
+          header-control:
+            type: blocklist
+            values: []
+          inject-proxy-headers: true
+      - parse:
+          version: 2.1.0
+          title: parse
+          parse-settings-reference:
+            default: apic-default-parsesettings
+      - redact:
+          version: 2.0.0
+          title: redact
+          redactions:
+            - action: remove
+              path: $.**.resourceId
+            - action: redact
+              path: $.**.iban
+            - action: redact
+              path: $.**.name
+          root: message.body
+paths:
+  /secured-payment:
+    parameters:
+      - name: paymentId
+        required: true
+        in: header
+        description: ID del pago del que se quiere obtener la información
+        type: string
+    get:
+      description: |-
+        Obtiene los siguientes datos de un pago: 
+
+        - iban *(dato ofuscado)*
+        - currency
+        - cashAccountType
+        - ammount
+        - ownerName
+        - name *(dato ofuscado)*
+      responses:
+        '200':
+          description: OK
+securityDefinitions:
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+schemes:
+  - https
