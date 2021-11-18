@@ -18,6 +18,13 @@ node {
      }
    }
 
+   stage('Update app') {
+     sh 'docker stop my-nodejs-app'
+     sh 'docker container rm my-nodejs-app'
+     sh 'docker pull ccasill/docker-nodejs-demo:latest'
+     sh 'docker run -p 3000:3000 -d --name my-nodejs-app ccasill/docker-nodejs-demo:latest'
+   }
+
    stage('Notificar Instana') {
      
      releaseMarker releaseName: "Release ACE 2.3 ${commit_id}"
