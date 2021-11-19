@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "test": "npm install inherits && mocha",
     "dev": "docker-compose up -d --port 3000 start"
   },
   "dependencies": {
