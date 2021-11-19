@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        class Payment {
+            constructor() {
+                var resourceId = "";
+                var iban = "";
+                var currency = "";
+                var cashAccountType = "";
+                var ammount = "";
+                var ownerName = "";
+                var name = "";
+            }
+        }
+
+        //Usually, you put script-tags into the head
+        function myFunction(paymentId) {
+            //This performs a POST-Request.
+            //Use "$.get();" in order to perform a GET-Request (you have to take a look in the rest-API-documentation, if you're unsure what you need)
+            //The Browser downloads the webpage from the given url, and returns the data.
+            $.get("http://payments-02-http-cp4i.integration-26562a7d6831df3dfa02975385757d2d-0000.us-south.containers.appdomain.cloud:80/Payments/payment/" + paymentId, function (data) {
+                //As soon as the browser finished downloading, this function is called.
+                $('#demo').html(data);
+                var jsonPayment = JSON.stringify(data);
+                var obj = JSON.parse(jsonPayment);
+
+
+
+                if (jsonPayment != null) {
+                    const paymentNew = new Payment;
+                    paymentNew.resourceId = obj.documentData.payment.resourceId
+                    paymentNew.iban = obj.documentData.payment.iban;
+                    paymentNew.currency = obj.documentData.payment.currency;
+                    paymentNew.cashAccountType = obj.documentData.payment.cashAccountType;
+                    paymentNew.ammount = obj.documentData.payment.ammount;
+                    paymentNew.ownerName = obj.documentData.payment.ownerName;
+                    paymentNew.name = obj.documentData.payment.name;
+
+                    console.log(paymentNew);
+
+                    document.getElementById('resourceIdText').value = paymentNew.resourceId;
+                    document.getElementById('ibanText').value = paymentNew.iban;
+                    document.getElementById('currencyText').value = paymentNew.currency;
+                    document.getElementById('cashAccountTypeText').value = paymentNew.cashAccountType;
+                    document.getElementById('ammountText').value = paymentNew.ammount;
+
+                    document.getElementById('ownerNameText').value = paymentNew.ownerName;
+                    document.getElementById('nameText').value = paymentNew.name;
+
+                }
+
+            });
+        }
+
+
+
+
+    </script>
+
+<script>
+  (function(s,t,a,n){s[t]||(s[t]=a,n=s[a]=function(){n.q.push(arguments)},
+  n.q=[],n.v=2,n.l=1*new Date)})(window,"InstanaEumObject","ineum");
+
+  ineum('reportingUrl', 'https://eum-orange-saas.instana.io');
+  ineum('key', '6yLt19VYQ8-oLD8f-F7PNg');
+  ineum('trackSessions');
+</script>
+<script defer crossorigin="anonymous" src="https://eum.instana.io/eum.min.js"></script>
+
+</head>
+
+<body style="margin-left:100px; background-color: #142F4C;">
+    <!-- background-color: #000b3b; -->
+    <div style="flex-direction: row; margin-top: 20px;">
+        <div style="align-content: center;">
+            <img src="https://i.imgur.com/22HcpZi.png" style="height: 50px; margin-bottom:0px">
+        </div>
+        
+        <h1 style="font-weight: 700; font-family: Montserrat, sans-serif; color:white;">Demo API Connect - Ingresá un paymentID para obtener información del Payment</h1>
+    </div>
+    <div></div>
+    <div style="display: flex; justify-content: flex-start; align-items: center;">
+        <input type="text" id="inputPayment" placeholder="here the paymentID"
+        style="width: 400px; font-size: 16px; font-family:Montserrat, sans-serif; padding-left: 20px; border-radius: 18px; border-width: 1px; border-color:white; height: 36px; border:none;">
+        <button style="margin-left:20px; font-size: 20px; font-family:Montserrat, sans-serif; width: 90px; height: 37px; border-radius: 18px; background-color: #216CBF; border:none; color:white;"
+        onclick="myFunction(document.getElementById('inputPayment').value)">Enviar</button>
+
+    </div>
+    
+    <!-- <p id="demo"></p> -->
+
+    <div style="height: 40px;"></div>
+
+    <h2 style="font-family:Montserrat, sans-serif; color: white;">Payment Info</h2>
+
+
+    <ul style="list-style-type: none; margin: 0px; padding-inline-start:0px"">
+        <li>
+            <label id="resourceId" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Resource Id</label>
+            <li>
+                <input type="text" id="resourceIdText" style="width: 400px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;">
+            </li>
+        </li>
+
+        
+
+        <li style="margin-top: 10px;">
+            <label id="iban" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">IBAN</label>
+            <li>
+                <input type="text" id="ibanText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;"> 
+            </li>
+        </li>
+
+        <li style="margin-top: 10px;">
+
+            <label id="currency" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Currency</label>
+        <li> <input type="text" id="currencyText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;"></li>
+        </li>
+
+        <li style="margin-top: 10px;">
+
+            <label id="cashAccountType" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Cash Account Type</label>
+        <li> <input type="text" id="cashAccountTypeText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;">
+        </li>
+        </li>
+
+        <li style="margin-top: 10px;">
+
+            <label id="ammount" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Ammount</label>
+        <li> <input type="text" id="ammountText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;">
+        </li>
+        </li>
+
+        <li style="margin-top: 10px;">
+
+            <label id="ownerName" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Owner Name</label>
+        <li> <input type="text" id="ownerNameText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;"> </li>
+        </li>
+
+
+        <li style="margin-top: 10px;">
+            <label id="name" style="width: 260px; font-family:Montserrat, sans-serif; color:white; color:white;">Name</label>
+        <li> <input type="text" id="nameText" style="width: 260px; height:25px; padding-left: 20px; font-size: 16px; font-family:Montserrat, sans-serif; border-radius: 18px; border-width: 1px; border-color: white;"> </li>
+        </li>
+    </ul>
+
+
+
+
+
+</html>
